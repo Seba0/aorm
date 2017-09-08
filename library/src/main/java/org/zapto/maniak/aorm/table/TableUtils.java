@@ -108,6 +108,9 @@ public class TableUtils {
 			} else if (type == BigInteger.class) {
 				BigInteger b = (BigInteger) value;
 				cv.put(cname, b.toString());
+			} else if (type.isEnum()) {
+				Enum e = (Enum) value;
+				cv.put(cname, e.name());
 			} else if (type == byte.class) {
 				cv.put(cname, (byte[]) value);
 			} else {
@@ -160,11 +163,12 @@ public class TableUtils {
 				f.set(e, new BigDecimal(c.getString(index)));
 			} else if (type == BigInteger.class) {
 				f.set(e, new BigInteger(c.getString(index)));
-				//            } else if (type.isEnum()) {
-//                f.set(e, c.getBlob(index))
+            } else if (type.isEnum()) {
+				Object o = Enum.valueOf((Class<Enum>)type, c.getString(index));
+                f.set(e, o);
             } else if (type == byte[].class) {
 				f.set(e, c.getBlob(index));
-			}
+			} 
 		}
         return e;
 	}
@@ -225,7 +229,8 @@ public class TableUtils {
 			} else if (type == Character.class
 					   || type == char.class
 					   || type == String.class
-					   || type == CharSequence.class) {
+					   || type == CharSequence.class
+					   || type.isEnum()) {
 				sql.append(" TEXT");
 			} else if (type == Float.class
 					   || type == float.class
@@ -233,11 +238,7 @@ public class TableUtils {
 					   || type == double.class) {
 				sql.append(" REAL");
 			} else if (type == Date.class) {
-				DateFormat df = DateFormat.UNIX;
-                Column col = type.getAnnotation(Column.class);
-                if (col != null) {
-					df = col.dateFormat();
-				}
+				DateFormat df = column.dateFormat();
                 sql.append(df == DateFormat.UNIX ? " INTEGER" : " NUMERIC");
 			} else if (type == BigDecimal.class
 					   || type == BigInteger.class) {
