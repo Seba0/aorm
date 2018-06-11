@@ -268,8 +268,48 @@ public class TableUtils {
 		}
         sql.deleteCharAt(sql.length() - 1).append(')');
         db.execSQL(sql.toString());
+		List<Index> ids = new ArrayList<>(Arrays.asList(table.getAnnotationsByType(Index.class)));
+		ids.addAll(Arrays.asList(t.indexes()));
+		for (Index idx : ids) {
+			String isql = createIndex(name, idx);
+			db.execSQL(isql);
+		}
         setTableVersion(table, db);
         return t.version();
+	}
+
+	private static <T extends Serializable> String createIndex(String tname, Index i) {
+		StringBuilder sb = new StringBuilder("CREATE ");
+		if (i.unique()) {
+			sb.append("UNIQUE ");
+		}
+		sb.append("INDEX ");
+		String[] s = i.columns();
+		String name = i.name();
+		if (TableUtils.DEFAULT.equals(name)) {
+			if (i.unique()) {
+				sb.append("UNI");
+			} else {
+				sb.append("IDX");
+			}
+			sb.append('_')
+				.append(Integer.toHexString(Arrays.hashCode(s)));
+		} else {
+			sb.append(name);
+		}
+		sb.append(" ON ")
+			.append(tname)
+			.append(" (");
+		boolean b = false;
+		for (String col : s) {
+			if (b) {
+				sb.append(", ");
+			}
+			sb.append(col);
+			b = true;
+		}
+		sb.append(")");
+		return sb.toString();
 	}
 
     private static <T extends Serializable> void setTableVersion(Class<T> table, SQLiteDatabase db) {

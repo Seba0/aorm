@@ -17,4 +17,6 @@ public @interface Table {
     String name() default TableUtils.DEFAULT;
 
     int version() default 0;
+	
+	Index[] indexes() default {};
 }
