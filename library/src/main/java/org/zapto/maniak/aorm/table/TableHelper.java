@@ -13,6 +13,7 @@ import org.zapto.maniak.aorm.annotation.RowId;
 import android.content.*;
 import android.provider.*;
 import java.io.File;
+import org.zapto.maniak.aorm.iterator.*;
 
 /**
  *
@@ -46,11 +47,11 @@ public final class TableHelper extends SQLiteOpenHelper {
         }
     }
 
-    public <E extends Serializable> Iterator<E> query(final Class<E> table, String selection, String... selectionArgs) {
+    public <E extends Serializable> ResultIterator<E> query(final Class<E> table, String selection, String... selectionArgs) {
         return query(table, selection, selectionArgs, null, null, null);
     }
 
-    public <E extends Serializable> Iterator<E> query(final Class<E> table, String selection, String[] selectionArgs, String groupBy, String having, String orderBy) {
+    public <E extends Serializable> ResultIterator<E> query(final Class<E> table, String selection, String[] selectionArgs, String groupBy, String having, String orderBy) {
         SQLiteDatabase rdb = getReadableDatabase();
         int v = TableUtils.getTableVersion(table, rdb);
         if (v < 0) {
@@ -59,101 +60,79 @@ public final class TableHelper extends SQLiteOpenHelper {
         String name = TableUtils.getName(table);
         String[] columns = TableUtils.getColumnsNames(table);
         final Cursor c = rdb.query(name, columns, selection, selectionArgs, groupBy, having, orderBy);
-        return new Iterator<E>() {
-
-            public boolean hasNext() {
-                int count = c.getCount();
-                int position = c.getPosition();
-                return count > position + 1;
-            }
-
-            public E next() {
-                if (c.moveToNext()) {
-                    try {
-                        return TableUtils.rowToObject(table, c);
-                    } catch (Exception ex) {
-                        throw new RuntimeException(ex);
-                    }
-                }
-                throw new NoSuchElementException();
-            }
-
-            public void remove() {
-                throw new UnsupportedOperationException();
-            }
-        };
+        return new CursorIterator<E>(c, table, rdb);
     }
 
     public <E extends Serializable> int update(E object) throws Exception {
-        SQLiteDatabase wdb = getWritableDatabase();
-        Class<? extends Serializable> table = object.getClass();
-        int v = TableUtils.getTableVersion(table, wdb);
-        if (v < 0) {
-            return -1;
-        }
-        ContentValues cv = TableUtils.objectToRow(object);
-        String id = cv.getAsString(BaseColumns._ID);
-        cv.remove(BaseColumns._ID);
-        int i = wdb.update(TableUtils.getName(table), cv, BaseColumns._ID + " = ?", new String[]{id});
-        wdb.close();
-        return i;
+        try(SQLiteDatabase wdb = getWritableDatabase()) {
+			Class<? extends Serializable> table = object.getClass();
+			int v = TableUtils.getTableVersion(table, wdb);
+			if (v < 0) {
+				return -1;
+			}
+			ContentValues cv = TableUtils.objectToRow(object);
+			String id = cv.getAsString(BaseColumns._ID);
+			cv.remove(BaseColumns._ID);
+			int i = wdb.update(TableUtils.getName(table), cv, BaseColumns._ID + " = ?", new String[]{id});
+			return i;
+		}
     }
 
     public <E extends Serializable> long insert(E object) throws Exception {
-        SQLiteDatabase wdb = getWritableDatabase();
-        Class<? extends Serializable> table = object.getClass();
-        int v = TableUtils.getTableVersion(table, wdb);
-        if (v < 0) {
-            TableUtils.createTable(table, wdb);
-        }
-        ContentValues cv = TableUtils.objectToRow(object);
-        cv.remove(BaseColumns._ID);
-        long id = wdb.insertOrThrow(TableUtils.getName(table), null, cv);
-        for (Field f : table.getDeclaredFields()) {
-            if (f.isAnnotationPresent(RowId.class)) {
-                f.setAccessible(true);
-                f.setLong(object, id);
-            }
-        }
-        wdb.close();
-        return id;
+        try(SQLiteDatabase wdb = getWritableDatabase()) {
+			Class<? extends Serializable> table = object.getClass();
+			int v = TableUtils.getTableVersion(table, wdb);
+			if (v < 0) {
+				TableUtils.createTable(table, wdb);
+			}
+			ContentValues cv = TableUtils.objectToRow(object);
+			cv.remove(BaseColumns._ID);
+			long id = wdb.insertOrThrow(TableUtils.getName(table), null, cv);
+			for (Field f : table.getDeclaredFields()) {
+				if (f.isAnnotationPresent(RowId.class)) {
+					f.setAccessible(true);
+					f.setLong(object, id);
+				}
+			}
+			return id;
+		}
     }
 
     public <E extends Serializable> int insert(Iterable<E> objects) throws Exception {
-        SQLiteDatabase wdb = getWritableDatabase();
-        Class<? extends Serializable> table = null;
-        String name = null;
-        int i = 0;
-        for (E e : objects) {
-            if (table == null) {
-                table = e.getClass();
-                int v = TableUtils.getTableVersion(table, wdb);
-                if (v < 0) {
-                    TableUtils.createTable(table, wdb);
-                }
-            }
-            if (name == null) {
-                name = TableUtils.getName(table);
-            }
-            ContentValues cv = TableUtils.objectToRow(e);
-            cv.remove(BaseColumns._ID);
-            long id = wdb.insert(name, null, cv);
-            for (Field f : table.getDeclaredFields()) {
-                if (f.isAnnotationPresent(RowId.class)) {
-                    f.setAccessible(true);
-                    f.setLong(e, id);
-                }
-            }
-            if (id >= 0) {
-                i++;
-            }
-        }
-        wdb.close();
-        return i;
+        try(SQLiteDatabase wdb = getWritableDatabase()) {
+			Class<? extends Serializable> table = null;
+			String name = null;
+			int i = 0;
+			for (E e : objects) {
+				if (table == null) {
+					table = e.getClass();
+					int v = TableUtils.getTableVersion(table, wdb);
+					if (v < 0) {
+						TableUtils.createTable(table, wdb);
+					}
+				}
+				if (name == null) {
+					name = TableUtils.getName(table);
+				}
+				ContentValues cv = TableUtils.objectToRow(e);
+				cv.remove(BaseColumns._ID);
+				long id = wdb.insert(name, null, cv);
+				for (Field f : table.getDeclaredFields()) {
+					if (f.isAnnotationPresent(RowId.class)) {
+						f.setAccessible(true);
+						f.setLong(e, id);
+					}
+				}
+				if (id >= 0) {
+					i++;
+				}
+			}
+			return i;
+		}
     }
 
     public void backup() {
         File databasePath = context.getDatabasePath(getDatabaseName());
-        
+
     }
 }

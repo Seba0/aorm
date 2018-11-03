@@ -8,7 +8,7 @@ import java.util.NoSuchElementException;
  *
  * @author Seba_0
  */
-public final class EmptyIterator<E> implements Iterator<E> {
+public final class EmptyIterator<E> implements ResultIterator<E> {
 
     public boolean hasNext() {
         return false;
@@ -21,4 +21,8 @@ public final class EmptyIterator<E> implements Iterator<E> {
     public void remove() {
         throw new UnsupportedOperationException();
     }
+
+	@Override
+	public void close() {
+	}
 }

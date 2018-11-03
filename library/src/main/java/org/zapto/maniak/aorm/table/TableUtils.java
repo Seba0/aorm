@@ -15,12 +15,12 @@ import android.provider.BaseColumns;
  *
  * @author Seba_0
  */
-public class TableUtils {
+public final class TableUtils {
 
     public static final String DEFAULT = "__default__";
     static final String AORM_TABLE = TableHelper.NAME + "_metadata";
 
-    static <T extends Serializable> String getName(Class<T> table) {
+    public static <T extends Serializable> String getName(Class<T> table) {
         if (table.isAnnotationPresent(Table.class)) {
             Table t = table.getAnnotation(Table.class);
             if (!DEFAULT.equals(t.name())) {
@@ -30,7 +30,7 @@ public class TableUtils {
         return "\"" + table.getName() + "\"";
     }
 
-    static String getColumnName(Field column) {
+	public static String getColumnName(Field column) {
 		if (column.isAnnotationPresent(RowId.class)) {
 			return BaseColumns._ID;
 		}
@@ -41,7 +41,7 @@ public class TableUtils {
 		return column.getName();
     }
 
-    static <T extends Serializable> String[] getColumnsNames(Class<T> table) {
+    public static <T extends Serializable> String[] getColumnsNames(Class<T> table) {
 		List<String> names = new ArrayList<String>();
         for (Field f : table.getDeclaredFields()) {
 			if (f.isAnnotationPresent(Column.class) || f.isAnnotationPresent(RowId.class)) {
@@ -51,7 +51,7 @@ public class TableUtils {
         return names.toArray(new String[0]);
 	}
 
-    static <T extends Serializable> ContentValues objectToRow(T object) throws IllegalAccessException {
+	public static <T extends Serializable> ContentValues objectToRow(T object) throws IllegalAccessException {
 		ContentValues cv = new ContentValues();
         Class<? extends Serializable> table = object.getClass();
         String name = getName(table);
@@ -120,7 +120,7 @@ public class TableUtils {
         return cv;
 	}
 
-    static <T extends Serializable> T rowToObject(Class<T> table, Cursor c) throws Exception {
+	public static <T extends Serializable> T rowToObject(Class<T> table, Cursor c) throws Exception {
 		T e = table.newInstance();
         for (Field f : table.getDeclaredFields()) {
 			f.setAccessible(true);
@@ -173,7 +173,7 @@ public class TableUtils {
         return e;
 	}
 
-    static <T extends Serializable> int getTableVersion(Class<T> table, SQLiteDatabase db) {
+    public static <T extends Serializable> int getTableVersion(Class<T> table, SQLiteDatabase db) {
 		Cursor c = db.query(AORM_TABLE, new String[]{"VERSION"}, "NAME = ?", new String[]{getName(table)}, null, null, null);
         if (c.moveToFirst()) {
 			return c.getInt(0);
@@ -181,7 +181,7 @@ public class TableUtils {
         return -1;
 	}
 
-    static <T extends Serializable> int createTable(Class<T> table, SQLiteDatabase db) {
+	public static <T extends Serializable> int createTable(Class<T> table, SQLiteDatabase db) {
 		Table t = table.getAnnotation(Table.class);
         if (t == null) {
 			throw new UnsupportedOperationException("Class '" + table + "' is not supported.");
