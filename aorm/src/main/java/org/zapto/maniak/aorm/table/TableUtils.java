@@ -84,7 +84,7 @@ public final class TableUtils {
 			} else if (type == Long.class || type == long.class) {
 				cv.put(cname, (Long)value);
 			} else if (type == Character.class || type == char.class) {
-				cv.put(cname, Character.toString(value));
+				cv.put(cname, String.valueOf(value));
 			} else if (type == String.class) {
 				cv.put(cname, (String) value);
 			} else if (type == CharSequence.class) {
