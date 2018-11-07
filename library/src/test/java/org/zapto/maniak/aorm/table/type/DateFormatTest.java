@@ -1,4 +1,4 @@
-package org.zapto.maniak.aorm.table;
+package org.zapto.maniak.aorm.table.type;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -8,6 +8,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.Locale;
 
 import static org.junit.Assert.*;
 
@@ -19,7 +20,7 @@ public class DateFormatTest {
     private final String formatedDate;
 
     private static Date parseDate(String date, String format) throws ParseException {
-        return new SimpleDateFormat(format).parse(date);
+        return new SimpleDateFormat(format, Locale.ROOT).parse(date);
     }
 
     private static long getUnix() {
@@ -29,20 +30,24 @@ public class DateFormatTest {
     @Parameterized.Parameters(name = "{index}: name({0})={1} : {2}")
     public static Iterable<Object[]> data() throws ParseException {
 
+        final String iso8601 = "2001-07-04T12:08:56.235+0200";
         final String date = "20181106";
         final String time = "174000";
         final String dateTime = date + time;
         final long unixDate = getUnix();
 
+        final String iso8601Format = "yyyy-MM-dd'T'HH:mm:ss.SSSZ";
         final String dateFormat = "yyyyMMdd";
         final String timeFormat = "HHmmss";
         final String dateTimeFormat = dateFormat + timeFormat;
 
         return Arrays.asList(new Object[][]{
+                {DateFormat.ISO8601, parseDate(iso8601, iso8601Format), iso8601},
                 {DateFormat.DATE_TIME, parseDate(dateTime, dateTimeFormat), dateTime},
                 {DateFormat.DATE, parseDate(date, dateFormat), date},
                 {DateFormat.TIME, parseDate(time, timeFormat), time},
                 {DateFormat.UNIX, new Date(unixDate * 1000), Long.toString(unixDate)},
+                {DateFormat.ISO8601, null, null},
                 {DateFormat.DATE_TIME, null, null},
                 {DateFormat.DATE, null, null},
                 {DateFormat.TIME, null, null},

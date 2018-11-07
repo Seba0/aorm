@@ -19,8 +19,8 @@ public class TableUtilsTest {
     @Parameterized.Parameters(name = "{index}: name({0})={1}")
     public static Iterable<Object[]> data() {
         return Arrays.asList(new Object[][]{
-                {TestTable1.class, '"' + TestTable1.class.getName() + '"', new String[] {"_id", "seccondColumn"}},
-                {TestTable2.class, "\"name_2\"", new String[] {"column_2"}},
+                {TestTable1.class, '"' + TestTable1.class.getName() + '"', new String[]{"_id", "secondColumn"}},
+                {TestTable2.class, "\"name_2\"", new String[]{"column_2"}},
         });
     }
 
@@ -58,7 +58,7 @@ public class TableUtilsTest {
         private long firstColumn;
 
         @Column
-        private String seccondColumn;
+        private String secondColumn;
     }
 
     @Table(name = "name_2")

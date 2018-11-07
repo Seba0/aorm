@@ -1,11 +1,9 @@
 package org.zapto.maniak.aorm.iterator;
 
-import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 
 /**
- *
  * @author Seba_0
  */
 public final class EmptyIterator<E> implements ResultIterator<E> {
@@ -22,7 +20,7 @@ public final class EmptyIterator<E> implements ResultIterator<E> {
         throw new UnsupportedOperationException();
     }
 
-	@Override
-	public void close() {
-	}
+    @Override
+    public void close() {
+    }
 }

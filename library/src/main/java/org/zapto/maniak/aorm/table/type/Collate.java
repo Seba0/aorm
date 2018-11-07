@@ -1,7 +1,6 @@
-package org.zapto.maniak.aorm.table;
+package org.zapto.maniak.aorm.table.type;
 
 /**
- *
  * @author Seba_0
  */
 public enum Collate {

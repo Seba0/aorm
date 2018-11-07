@@ -4,12 +4,12 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+
 import org.zapto.maniak.aorm.table.TableUtils;
-import org.zapto.maniak.aorm.table.Collate;
-import org.zapto.maniak.aorm.table.DateFormat;
+import org.zapto.maniak.aorm.table.type.Collate;
+import org.zapto.maniak.aorm.table.type.DateFormat;
 
 /**
- *
  * @author Seba_0
  */
 @Target(ElementType.FIELD)

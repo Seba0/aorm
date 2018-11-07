@@ -1,13 +1,13 @@
-package org.zapto.maniak.aorm.table;
+package org.zapto.maniak.aorm.table.type;
 
 import java.text.*;
 import java.util.*;
 
 /**
- *
  * @author Seba_0
  */
 public enum DateFormat {
+    ISO8601("yyyy-MM-dd'T'HH:mm:ss.SSSZ"),
     DATE_TIME("yyyyMMddHHmmss"),
     DATE("yyyyMMdd"),
     TIME("HHmmss"),
@@ -23,7 +23,7 @@ public enum DateFormat {
 
     private final java.text.DateFormat format;
 
-    String format(Date date) {
+    public String format(Date date) {
         if (date == null) {
             return null;
         }
@@ -33,7 +33,7 @@ public enum DateFormat {
         return format.format(date);
     }
 
-    Date parse(String text) throws ParseException {
+    public Date parse(String text) throws ParseException {
         if (text == null || text.isEmpty()) {
             return null;
         }
