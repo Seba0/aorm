@@ -8,16 +8,16 @@ import java.util.*;
  * @author Seba_0
  */
 public enum DateFormat {
-    DATE_TIME("yyyyMMddhhmmss"),
+    DATE_TIME("yyyyMMddHHmmss"),
     DATE("yyyyMMdd"),
-    TIME("hhmmss"),
+    TIME("HHmmss"),
     UNIX;
 
-    private DateFormat(String format) {
+    DateFormat(String format) {
         this.format = new SimpleDateFormat(format);
     }
 
-    private DateFormat() {
+    DateFormat() {
         this.format = null;
     }
 
